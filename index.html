@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claim Submission Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ─── RESET & BASE ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #F5F3EE;
+    --surface:   #FDFCF9;
+    --ink:        #1A1714;
+    --ink-2:      #5A5450;
+    --rule:       #DDD9D2;
+    --accent:     #C94F2A;
+    --accent-2:   #1D6B52;
+    --gold:       #B8952A;
+    --red-soft:   #FAF0EC;
+    --green-soft: #EDF5F1;
+    --mono:       'DM Mono', monospace;
+    --serif:      'DM Serif Display', serif;
+    --sans:       'DM Sans', sans-serif;
+    --radius:     4px;
+    --shadow:     0 2px 12px rgba(26,23,20,.08);
+    --shadow-lg:  0 8px 32px rgba(26,23,20,.12);
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    width: 100%;
+    background: var(--ink);
+    color: #FFF;
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-mark {
+    width: 32px; height: 32px;
+    border: 2px solid var(--accent);
+    display: grid; place-items: center;
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: .02em;
+    color: #FFF;
+  }
+  header span.tag {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(255,255,255,.08);
+    padding: 3px 10px;
+    border-radius: 2px;
+    color: rgba(255,255,255,.55);
+  }
+
+  /* ─── MAIN CONTAINER ─── */
+  main {
+    width: 100%;
+    max-width: 920px;
+    padding: 40px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ─── STEP INDICATOR ─── */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: var(--ink-2);
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 8px 0;
+    opacity: .45;
+    transition: opacity .3s;
+  }
+  .step.active { opacity: 1; }
+  .step.done   { opacity: 1; }
+  .step-num {
+    width: 22px; height: 22px;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 10px;
+  }
+  .step.done .step-num { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
+  .step.active .step-num { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .step-sep { flex: 1; height: 1px; background: var(--rule); min-width: 24px; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-head h2 {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 400;
+  }
+  .card-head .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-left: auto;
+  }
+  .card-body { padding: 24px; }
+
+  /* ─── FORM GRID ─── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+  .form-grid .full { grid-column: 1/-1; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    color: var(--ink-2);
+    display: block;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  label .req { color: var(--accent); }
+
+  input[type=text],
+  input[type=number],
+  input[type=date],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(26,23,20,.06);
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235A5450'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  textarea { resize: vertical; min-height: 72px; }
+
+  /* ─── ACTIVITY BUILDER ─── */
+  #activities-list { display: flex; flex-direction: column; gap: 12px; }
+  .activity-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+    background: var(--bg);
+    padding: 14px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    position: relative;
+  }
+  .activity-row .del-btn {
+    width: 28px; height: 28px;
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--ink-2);
+    font-size: 16px;
+    display: grid; place-items: center;
+    transition: background .15s, color .15s;
+  }
+  .activity-row .del-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ─── FILE DROP ZONE ─── */
+  .dropzone {
+    border: 2px dashed var(--rule);
+    border-radius: var(--radius);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    position: relative;
+  }
+  .dropzone:hover, .dropzone.drag-over {
+    border-color: var(--ink);
+    background: rgba(26,23,20,.02);
+  }
+  .dropzone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .dropzone-icon { font-size: 28px; line-height: 1; }
+  .dropzone p {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .dropzone p strong { color: var(--ink); }
+  .dropzone p.hint { font-size: 11px; margin-top: 4px; font-family: var(--mono); }
+
+  /* ─── FILE PILL LIST ─── */
+  .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .file-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-family: var(--mono);
+    max-width: 240px;
+  }
+  .file-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-pill .rm {
+    flex-shrink: 0;
+    cursor: pointer;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1;
+    background: none; border: none; padding: 0;
+  }
+  .file-pill .rm:hover { color: var(--accent); }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, opacity .15s, transform .1s;
+    border: none;
+    white-space: nowrap;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--ink); color: #fff; }
+  .btn-primary:hover { background: #333; }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-2);
+  }
+  .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+
+  /* ─── SUBMIT ROW ─── */
+  .submit-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    margin-top: 8px;
+  }
+
+  /* ─── PROCESSING STATE ─── */
+  #processing-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 48px 32px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  #processing-panel.visible { display: block; }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--rule);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #processing-panel h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+  #processing-panel p {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin-bottom: 4px;
+  }
+  #session-id-display {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    margin-top: 12px;
+    background: var(--bg);
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 2px;
+  }
+
+  /* ─── RESULT PANEL ─── */
+  #result-panel {
+    display: none;
+  }
+  #result-panel.visible { display: block; }
+
+  .result-header {
+    background: var(--green-soft);
+    border: 1px solid #BDD9CC;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .result-header.error-header {
+    background: var(--red-soft);
+    border-color: #E8C4B5;
+  }
+  .result-icon { font-size: 22px; }
+  .result-header h2 { font-family: var(--serif); font-size: 18px; font-weight: 400; }
+
+  .result-body {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 24px;
+  }
+  .result-body pre {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 400px;
+    overflow: auto;
+    line-height: 1.6;
+  }
+  .formatted-result {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 20px;
+  max-height: 700px;
+  overflow: auto;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.formatted-result h1,
+.formatted-result h2,
+.formatted-result h3,
+.formatted-result h4 {
+  margin-top: 18px;
+  margin-bottom: 10px;
+  font-family: var(--serif);
+  color: var(--ink);
+}
+
+.formatted-result table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+
+.formatted-result th,
+.formatted-result td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+.formatted-result th {
+  background: #f5f5f5;
+}
+
+.formatted-result p {
+  margin-bottom: 12px;
+}
+
+.formatted-result ul {
+  padding-left: 20px;
+  margin-bottom: 14px;
+}
+
+.formatted-result li {
+  margin-bottom: 6px;
+}
+
+
+
+  .result-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .meta-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+  }
+  .meta-chip strong { color: var(--accent-2); }
+
+  /* ─── TOAST ─── */
+  #toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+    z-index: 999;
+    max-width: 340px;
+  }
+  #toast.show { opacity: 1; }
+  #toast.error { background: var(--accent); }
+
+  /* ─── SECTION DIVIDER ─── */
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 11px; font-family: var(--mono);
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink-2); margin: 4px 0;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--rule);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .activity-row { grid-template-columns: 1fr 1fr; }
+    .activity-row > *:last-child { grid-column: 1/-1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">CSP</div>
+  <h1>Claim Submission Portal</h1>
+  <span class="tag">DEMO Portal</span>
+</header>
+
+<main>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps">
+    <div class="step active" id="step-1"><div class="step-num">1</div>Claim Details</div>
+    <div class="step-sep"></div>
+    <div class="step" id="step-2"><div class="step-num">2</div>Activities</div>
+    <div class="step-sep"></div>
+    <div class="step" id="step-3"><div class="step-num">3</div>Files</div>
+    <div class="step-sep"></div>
+    <div class="step" id="step-4"><div class="step-num">4</div>Result</div>
+  </div>
+
+  <!-- ── FORM ── -->
+  <form id="claim-form" novalidate>
+
+    <!-- SECTION 1: CLAIM IDENTITY -->
+    <div class="card" id="card-1">
+      <div class="card-head">
+        <h2>Claim &amp; Reservation Details</h2>
+        <span class="badge">REQUIRED</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div>
+            <label>Claim Reference ID <span class="req">*</span></label>
+            <input type="text" id="ClaimReferenceID" placeholder="e.g. 5000031500" required />
+          </div>
+          <div>
+            <label>Claim ID</label>
+            <input type="text" id="ClaimID" placeholder="e.g. 2000030576" />
+          </div>
+          <div class="full">
+            <label>Claim Description</label>
+            <input type="text" id="ClaimDescription" placeholder="e.g. Claim_1Q25_CONSU_O_CAD_BEST BUY..." />
+          </div>
+          <div>
+            <label>Reservation Reference ID</label>
+            <input type="text" id="ReservationReferenceID" placeholder="e.g. 4000042323" />
+          </div>
+          <div>
+            <label>Reservation Description</label>
+            <input type="text" id="ReservationDescription" placeholder="e.g. 1Q25_CONSU_O_CAD..." />
+          </div>
+          <div>
+            <label>Invoice Date</label>
+            <input type="date" id="InvoiceDate" />
+          </div>
+          <div>
+            <label>Invoice Number</label>
+            <input type="text" id="InvoiceNumber" placeholder="e.g. 716083" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: PROGRAM / CLASSIFICATION -->
+    <div class="card" id="card-2">
+      <div class="card-head"><h2>Program &amp; Classification</h2></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div>
+            <label>Program <span class="req">*</span></label>
+            <select id="Program" required>
+              <option value="">— Select —</option>
+              <option value="MDF">MDF</option>
+              <option value="CMF">CMF</option>
+              <option value="Co-Op">Co-Op</option>
+              <option value="Rebate">Rebate</option>
+              <option value="SPIFF">SPIFF</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label>Region</label>
+            <select id="Region">
+              <option value="">— Select —</option>
+              <option>North America</option>
+              <option>EMEA</option>
+              <option>APAC</option>
+              <option>LATAM</option>
+            </select>
+          </div>
+          <div>
+            <label>Sub Region</label>
+            <input type="text" id="SubRegion" placeholder="e.g. Canada" />
+          </div>
+          <div>
+            <label>Division</label>
+            <input type="text" id="Division" placeholder="e.g. Consumer" />
+          </div>
+          <div>
+            <label>Fund Type</label>
+            <input type="text" id="FundType" placeholder="e.g. Co Marketing" />
+          </div>
+          <div>
+            <label>Accounting Classification</label>
+            <select id="AccountingClassification">
+              <option value="">— Select —</option>
+              <option>OPEX</option>
+              <option>CAPEX</option>
+            </select>
+          </div>
+          <div>
+            <label>Payee Name</label>
+            <input type="text" id="PayeeName" placeholder="e.g. BEST BUY CANADA LTD." />
+          </div>
+          <div>
+            <label>Payee ID</label>
+            <input type="text" id="PayeeID" placeholder="e.g. 8000007515" />
+          </div>
+          <div>
+            <label>Payee Type</label>
+            <select id="PayeeType">
+              <option value="">— Select —</option>
+              <option>Customer</option>
+              <option>Vendor</option>
+              <option>Third Party</option>
+            </select>
+          </div>
+          <div>
+            <label>Supplier Type</label>
+            <select id="SupplierType">
+              <option value="">— Select —</option>
+              <option>Payment to Customer</option>
+              <option>Direct Payment</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label>Planned Start Date</label>
+            <input type="date" id="ResPlannedStartDate" />
+          </div>
+          <div>
+            <label>Planned End Date</label>
+            <input type="date" id="ResPlannedEndDate" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CLAIM ACTIVITIES -->
+    <div class="card" id="card-3">
+      <div class="card-head">
+        <h2>Claim Activities</h2>
+        <button type="button" class="btn btn-ghost btn-sm" id="add-activity-btn"
+          style="margin-left:auto">+ Add Activity</button>
+      </div>
+      <div class="card-body">
+        <div id="activities-list"></div>
+        <p id="no-activities" style="font-size:13px;color:var(--ink-2);margin-top:8px;">
+          No activities added yet. Click "+ Add Activity" above.
+        </p>
+      </div>
+    </div>
+
+    <!-- SECTION 4: FILES -->
+    <div class="card" id="card-4">
+      <div class="card-head"><h2>Attachments (Claim Evidence)</h2></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <label>Upload Attachment Files</label>
+          <div class="dropzone" id="att-dropzone">
+            <input type="file" id="att-files" multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.eml,.msg,.zip,.7z" />
+            <div class="dropzone-icon">📎</div>
+            <p><strong>Click to browse</strong> or drag &amp; drop</p>
+            <p class="hint">PDF · DOCX · XLSX · CSV · TXT · PNG · JPG · EML · MSG · ZIP · 7Z</p>
+          </div>
+          <div class="file-list" id="att-file-list"></div>
+        </div>
+
+        <div class="divider">PO Document</div>
+
+        <div>
+          <label>PO Output File <span class="req">*</span> — PDF only</label>
+          <div class="dropzone" id="po-dropzone">
+            <input type="file" id="po-file" accept=".pdf" />
+            <div class="dropzone-icon">📄</div>
+            <p><strong>Click to browse</strong> or drag &amp; drop</p>
+            <p class="hint">PDF files only · max 1 file</p>
+          </div>
+          <div class="file-list" id="po-file-list"></div>
+        </div>
+      </div>
+    </div>
+
+ 
+    
+
+    <!-- SUBMIT -->
+    <div class="submit-row">
+      <button type="button" class="btn btn-ghost" id="reset-btn">Reset</button>
+      <button type="submit" class="btn btn-primary" id="submit-btn">
+        Submit Claim →
+      </button>
+    </div>
+
+  </form>
+
+  <!-- PROCESSING PANEL -->
+  <div id="processing-panel">
+    <div class="spinner"></div>
+    <h2>Processing your claim…</h2>
+    <p>Files are being analysed by the AI agent.</p>
+    <p>This may take several minutes. Please keep this tab open.</p>
+    <div id="session-id-display"></div>
+  </div>
+
+  <!-- RESULT PANEL -->
+  <div id="result-panel">
+    <div class="result-header" id="result-header">
+      <span class="result-icon" id="result-icon">✅</span>
+      <h2 id="result-title">Claim Processed Successfully</h2>
+    </div>
+    <div class="result-body">
+      <div class="result-meta" id="result-meta"></div>
+      <label>Copilot Agent Response</label>
+      <div id="result-text" class="formatted-result"></div>
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+        <a id="result-pdf-link" href="#" target="_blank"
+          class="btn btn-ghost btn-sm" style="display:none;">
+          View Final PDF ↗
+        </a>
+        <button class="btn btn-ghost btn-sm" id="new-claim-btn">Submit Another Claim</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+// const API_BASE_URL = "http://localhost:7071/api";
+const API_BASE_URL = "https://claimsubmition-agd5cnf6f3hsh7am.canadacentral-01.azurewebsites.net/api";
+let attFiles  = [];   // [{name, base64, size, type}]
+let poFile    = null; // single PO file
+let pollTimer = null;
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function toast(msg, isError = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 4000);
+}
+
+// ── FILE → BASE64 ──────────────────────────────────────────────────────────
+function readFileAsBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+// ── RENDER FILE PILLS ──────────────────────────────────────────────────────
+function renderPills(listId, files, removeCallback) {
+  const el = document.getElementById(listId);
+  el.innerHTML = '';
+  files.forEach((f, idx) => {
+    const pill = document.createElement('div');
+    pill.className = 'file-pill';
+    pill.innerHTML = `
+      <span title="${f.name}">${f.name}</span>
+      <button class="rm" data-idx="${idx}" title="Remove">×</button>`;
+    pill.querySelector('.rm').addEventListener('click', () => removeCallback(idx));
+    el.appendChild(pill);
+  });
+}
+
+// ── ATTACHMENT DROP ZONE ───────────────────────────────────────────────────
+const attDz = document.getElementById('att-dropzone');
+const attIn = document.getElementById('att-files');
+
+attIn.addEventListener('change', async () => {
+  for (const f of attIn.files) {
+    const b64 = await readFileAsBase64(f);
+    attFiles.push({ name: f.name, base64: b64, size: f.size, type: f.type });
+  }
+  renderPills('att-file-list', attFiles, (i) => {
+    attFiles.splice(i, 1);
+    renderPills('att-file-list', attFiles, arguments.callee);
+  });
+  attIn.value = '';
+  advanceStep(2);
+});
+
+attDz.addEventListener('dragover', e => { e.preventDefault(); attDz.classList.add('drag-over'); });
+attDz.addEventListener('dragleave', () => attDz.classList.remove('drag-over'));
+attDz.addEventListener('drop', async e => {
+  e.preventDefault(); attDz.classList.remove('drag-over');
+  for (const f of e.dataTransfer.files) {
+    const b64 = await readFileAsBase64(f);
+    attFiles.push({ name: f.name, base64: b64, size: f.size });
+  }
+  renderPills('att-file-list', attFiles, (i) => {
+    attFiles.splice(i, 1);
+    renderPills('att-file-list', attFiles, arguments.callee);
+  });
+});
+
+// ── PO DROP ZONE ───────────────────────────────────────────────────────────
+const poDz = document.getElementById('po-dropzone');
+const poIn = document.getElementById('po-file');
+
+async function handlePoFile(f) {
+  if (!f.name.toLowerCase().endsWith('.pdf')) {
+    toast('PO file must be PDF', true); return;
+  }
+  const b64 = await readFileAsBase64(f);
+  poFile = { name: f.name, base64: b64, size: f.size };
+  renderPills('po-file-list', [poFile], () => {
+    poFile = null;
+    document.getElementById('po-file-list').innerHTML = '';
+  });
+  advanceStep(3);
+}
+
+poIn.addEventListener('change', () => { if (poIn.files[0]) handlePoFile(poIn.files[0]); poIn.value = ''; });
+poDz.addEventListener('dragover', e => { e.preventDefault(); poDz.classList.add('drag-over'); });
+poDz.addEventListener('dragleave', () => poDz.classList.remove('drag-over'));
+poDz.addEventListener('drop', async e => {
+  e.preventDefault(); poDz.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handlePoFile(e.dataTransfer.files[0]);
+});
+
+// ── ACTIVITY BUILDER ───────────────────────────────────────────────────────
+const ACTIVITY_TYPES = [
+  'Web Banner', 'Digital Display', 'Email Campaign', 'Social Media',
+  'Print Ad', 'In-Store Display', 'Event Sponsorship', 'Co-Op',
+  'Rev Red after the fact', 'Online Display Campaign', 'Other'
+];
+
+const POC_SOURCES = [
+  'CUSTOMER RATE CARD',
+  'INVOICE',
+  'PROOF OF PERFORMANCE',
+  'PROOF OF EXECUTION',
+  'MEDIA PLAN',
+  'THIRD PARTY REPORT',
+  'SCREENSHOT',
+  'EMAIL CONFIRMATION',
+  'OTHER'
+];
+
+let activityIdx = 0;
+
+document.getElementById('add-activity-btn').addEventListener('click', addActivity);
+
+function addActivity() {
+  document.getElementById('no-activities').style.display = 'none';
+  const idx = activityIdx++;
+  const row = document.createElement('div');
+  row.className = 'activity-row';
+  row.dataset.idx = idx;
+  row.innerHTML = `
+    <div>
+      <label>Activity Type</label>
+      <select name="actType_${idx}" required>
+        <option value="">— Select —</option>
+        ${ACTIVITY_TYPES.map(t => `<option>${t}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+  <label>POC Source</label>
+  <select name="pocSource_${idx}">
+    <option value="">— Select —</option>
+    ${POC_SOURCES.map(p => `<option>${p}</option>`).join('')}
+  </select>
+</div>
+    <div>
+      <label>Marketing Activity ID</label>
+      <input type="text" name="maId_${idx}" placeholder="e.g. 41000086439" />
+    </div>
+    <div>
+      <label>Approved Amount</label>
+      <input type="number" name="amount_${idx}" placeholder="0.00" min="0" step="0.01" />
+    </div>
+    <div>
+      <label>Currency</label>
+      <select name="currency_${idx}">
+        <option>US Dollar</option>
+        <option>Canadian Dollar</option>
+        <option>Euro</option>
+        <option>GBP</option>
+        <option>AUD</option>
+      </select>
+    </div>
+    <div>
+      <button type="button" class="del-btn" title="Remove">×</button>
+    </div>`;
+  row.querySelector('.del-btn').addEventListener('click', () => {
+    row.remove();
+    if (!document.getElementById('activities-list').querySelector('.activity-row')) {
+      document.getElementById('no-activities').style.display = '';
+    }
+  });
+  document.getElementById('activities-list').appendChild(row);
+  advanceStep(2);
+}
+
+// ── STEP INDICATOR ─────────────────────────────────────────────────────────
+function advanceStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById(`step-${i}`);
+    if (!el) continue;
+    el.classList.remove('active', 'done');
+    if (i < n)      el.classList.add('done');
+    else if (i === n) el.classList.add('active');
+  }
+}
+
+// ── BUILD PAYLOAD ──────────────────────────────────────────────────────────
+function buildPayload() {
+  const g = id => document.getElementById(id)?.value?.trim() || '';
+
+  // Claim activities from rows
+  const actRows = document.querySelectorAll('.activity-row');
+  const claimActivities = [];
+  const marketingActivities = [];
+  let maRefCounter = 41000000000;
+
+  actRows.forEach(row => {
+    const idx      = row.dataset.idx;
+    const actType  = row.querySelector(`[name="actType_${idx}"]`)?.value;
+    const maId     = row.querySelector(`[name="maId_${idx}"]`)?.value || String(++maRefCounter);
+    const pocSource = row.querySelector(`[name="pocSource_${idx}"]`)?.value || '';
+    const amount   = parseFloat(row.querySelector(`[name="amount_${idx}"]`)?.value) || 0;
+    const currency = row.querySelector(`[name="currency_${idx}"]`)?.value || 'US Dollar';
+
+    if (!actType) return;
+
+    claimActivities.push({
+      ActivityType:       actType,
+      ApprovedAmount:     amount,
+      MarketingActivity:  maId,
+      Currency:           currency,
+      StartDate:          g('ResPlannedStartDate'),
+      EndDate:            g('ResPlannedEndDate'),
+      PreTaxCost:         amount,
+      TaxAmount:          0,
+      TotalCost:          amount,
+    });
+
+    marketingActivities.push({
+      ActivityType:                 actType,
+      MarketingActivityReferenceID: maId,
+      Currency:                     currency,
+      PreTaxAmount:                 amount,
+      TotalCost:                    amount,
+      TaxAmount:                    0,
+      POCSource:                    pocSource,
+      POCRemarks:                   '',
+      StartDate:                    g('ResPlannedStartDate'),
+      EndDate:                      g('ResPlannedEndDate'),
+    });
+  });
+
+  // Attachments
+  const attachments = attFiles.map((f, i) => ({
+    ID:                  `att-${Date.now()}-${i}`,
+    Name:                f.name,
+    Filesize:            f.size,
+    FileContentBase64:   f.base64,
+    Type:                'File',
+    CreatedOn:           new Date().toISOString().split('T')[0],
+    ModifiedOn:          new Date().toISOString().split('T')[0],
+    Version:             1,
+    ActivityType:        '',
+    MarketingActivity:   '',
+  }));
+
+  // PO
+  const poOutputFiles = poFile ? [{
+    ID:               `po-${Date.now()}`,
+    Name:             poFile.name,
+    Filesize:         poFile.size,
+    FileContentBase64: poFile.base64,
+    Type:             'File',
+    CreatedOn:        new Date().toISOString().split('T')[0],
+    ModifiedOn:       new Date().toISOString().split('T')[0],
+    Version:          1,
+  }] : [];
+
+  return {
+    ClaimReferenceID:               g('ClaimReferenceID'),
+    ClaimID:                        g('ClaimID'),
+    ClaimDescription:               g('ClaimDescription'),
+    ReservationReferenceID:         g('ReservationReferenceID'),
+    ReservationDescription:         g('ReservationDescription'),
+    Program:                        g('Program'),
+    Region:                         g('Region'),
+    SubRegion:                      g('SubRegion'),
+    Division:                       g('Division'),
+    FundType:                       g('FundType'),
+    AccountingClassification:       g('AccountingClassification'),
+    SupplierType:                   g('SupplierType'),
+    PayeeID:                        g('PayeeID'),
+    PayeeName:                      g('PayeeName'),
+    PayeeType:                      g('PayeeType'),
+    InvoiceDate:                    g('InvoiceDate'),
+    InvoiceNumber:                  g('InvoiceNumber'),
+    ResPlannedStartDate:            g('ResPlannedStartDate'),
+    ResPlannedEndDate:              g('ResPlannedEndDate'),
+    MarketingPlanStatus:            'Open',
+    ResCrossQuarter:                false,
+    SpecialVendor:                  false,
+    PassThruFlag:                   false,
+    CompanyCode:                    '100',
+    MarketingActivities:            marketingActivities,
+    ClaimActivities:                claimActivities,
+    Attachments:                    attachments,
+    POOutputFiles:                  poOutputFiles,
+  };
+}
+
+// ── FORM SUBMIT ────────────────────────────────────────────────────────────
+document.getElementById('claim-form').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  // Validation
+  const claimRef = document.getElementById('ClaimReferenceID').value.trim();
+  const program  = document.getElementById('Program').value;
+  
+
+  if (!claimRef) { toast('Claim Reference ID is required', true); return; }
+  if (!program)  { toast('Program is required', true); return; }
+  if (!poFile)   { toast('PO document (PDF) is required', true); return; }
+  if (!document.querySelectorAll('.activity-row').length) {
+    toast('Add at least one Claim Activity', true); return;
+  }
+
+  const payload = buildPayload();
+
+  // Show processing
+  document.getElementById('claim-form').style.display = 'none';
+  const proc = document.getElementById('processing-panel');
+  proc.classList.add('visible');
+  advanceStep(4);
+
+  try {
+    const uploadUrl = `${API_BASE_URL}/upload-files`;
+    const resp = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`Upload failed (${resp.status}): ${err}`);
+    }
+
+    const { sessionId } = await resp.json();
+    document.getElementById('session-id-display').textContent =
+      `Session ID: ${sessionId}`;
+
+    // Start polling
+    startPolling(sessionId);
+
+  } catch (err) {
+    proc.classList.remove('visible');
+    document.getElementById('claim-form').style.display = '';
+    advanceStep(1);
+    toast(err.message, true);
+    console.error(err);
+  }
+});
+
+// ── POLLING ────────────────────────────────────────────────────────────────
+function startPolling(sessionId) {
+  const INTERVAL = 6000;
+  const MAX_WAIT  = 20 * 60 * 1000; // 20 min hard cap
+  const started   = Date.now();
+
+  pollTimer = setInterval(async () => {
+    if (Date.now() - started > MAX_WAIT) {
+      clearInterval(pollTimer);
+      showError('Processing timed out. Please check later or contact support.');
+      return;
+    }
+
+    try {
+      const url = `${API_BASE_URL}/get-result?sessionId=${sessionId}`;
+      const resp = await fetch(url);
+      if (!resp.ok) return; // transient error — keep polling
+
+      const data = await resp.json();
+
+      if (data.status === 'Completed') {
+        clearInterval(pollTimer);
+        showResult(data);
+      }
+      // else still Processing — keep polling
+
+    } catch (err) {
+      console.warn('Poll error:', err);
+    }
+  }, INTERVAL);
+}
+
+// ── SHOW RESULT ────────────────────────────────────────────────────────────
+function showResult(data) {
+  document.getElementById('processing-panel').classList.remove('visible');
+  const panel = document.getElementById('result-panel');
+  panel.classList.add('visible');
+
+  const isError = !data.final_copilot_response ||
+    data.final_copilot_response.toLowerCase().includes('glitch') ||
+    data.final_copilot_response.toLowerCase().includes('error');
+
+  document.getElementById('result-header').className =
+    'result-header' + (isError ? ' error-header' : '');
+  document.getElementById('result-icon').textContent  = isError ? '⚠️' : '✅';
+  document.getElementById('result-title').textContent =
+    isError ? 'Processing Completed with Issues' : 'Claim Processed Successfully';
+
+  // Meta chips
+  const meta = document.getElementById('result-meta');
+  meta.innerHTML = '';
+  const chips = [
+    ['Session', data.session_id],
+    ['Claim',   data.claim_id],
+    ['Status',  data.status],
+  ];
+  chips.forEach(([k, v]) => {
+    if (!v) return;
+    const chip = document.createElement('div');
+    chip.className = 'meta-chip';
+    chip.innerHTML = `${k}: <strong>${v}</strong>`;
+    meta.appendChild(chip);
+  });
+
+  let html = data.final_copilot_response || '(no response)';
+
+// Remove full HTML wrappers
+html = html
+  .replace(/<!DOCTYPE[^>]*>/gi, '')
+  .replace(/<html[^>]*>/gi, '')
+  .replace(/<\/html>/gi, '')
+  .replace(/<head[\s\S]*?<\/head>/gi, '')
+  .replace(/<body[^>]*>/gi, '')
+  .replace(/<\/body>/gi, '');
+
+document.getElementById('result-text').innerHTML = html;
+
+  const pdfLink = document.getElementById('result-pdf-link');
+  if (data.final_file_url) {
+    pdfLink.href  = data.final_file_url;
+    pdfLink.style.display = '';
+  }
+}
+
+function showError(msg) {
+  document.getElementById('processing-panel').classList.remove('visible');
+  showResult({ status: 'Error', final_copilot_response: msg });
+}
+
+// ── RESET ──────────────────────────────────────────────────────────────────
+document.getElementById('reset-btn').addEventListener('click', resetForm);
+document.getElementById('new-claim-btn').addEventListener('click', resetForm);
+
+function resetForm() {
+  clearInterval(pollTimer);
+  attFiles  = [];
+  poFile    = null;
+  activityIdx = 0;
+
+  document.getElementById('att-file-list').innerHTML = '';
+  document.getElementById('po-file-list').innerHTML  = '';
+  document.getElementById('activities-list').innerHTML = '';
+  document.getElementById('no-activities').style.display = '';
+  document.getElementById('claim-form').reset();
+  document.getElementById('claim-form').style.display = '';
+  document.getElementById('processing-panel').classList.remove('visible');
+  document.getElementById('result-panel').classList.remove('visible');
+  advanceStep(1);
+}
+
+// initialise step
+advanceStep(1);
+</script>
+</body>
+</html>
