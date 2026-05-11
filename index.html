@@ -529,6 +529,44 @@
 
   <!-- ── FORM ── -->
   <form id="claim-form" novalidate>
+    <!-- SECTION 0: PAYLOAD IMPORT -->
+<div class="card" id="card-0">
+  <div class="card-head">
+    <h2>Import Existing Claim Payload</h2>
+    <span class="badge">OPTIONAL</span>
+  </div>
+
+  <div class="card-body" style="display:flex;flex-direction:column;gap:16px;">
+
+    <div>
+      <label>Paste Payload JSON</label>
+
+      <textarea
+        id="payload-input"
+        placeholder='Paste full JSON payload here...'
+        style="min-height:220px;font-family:var(--mono);font-size:12px;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        id="load-payload-btn">
+
+        Load Payload
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        id="clear-payload-btn">
+
+        Clear Payload
+      </button>
+    </div>
+
+  </div>
+</div>
 
     <!-- SECTION 1: CLAIM IDENTITY -->
     <div class="card" id="card-1">
@@ -749,6 +787,10 @@
 
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <script>
+
+
+
+
 // ── STATE ──────────────────────────────────────────────────────────────────
 // const API_BASE_URL = "http://localhost:7071/api";
 const API_BASE_URL = "https://claimsubmition-agd5cnf6f3hsh7am.canadacentral-01.azurewebsites.net/api";
@@ -765,6 +807,135 @@ function toast(msg, isError = false) {
   el._t = setTimeout(() => { el.className = ''; }, 4000);
 }
 
+// ── PAYLOAD IMPORT ────────────────────────────────────────────────────────
+
+document.getElementById('load-payload-btn')
+  .addEventListener('click', loadPayloadIntoForm);
+
+document.getElementById('clear-payload-btn')
+  .addEventListener('click', () => {
+    document.getElementById('payload-input').value = '';
+  });
+
+function loadPayloadIntoForm() {
+
+  try {
+
+    const raw = document.getElementById('payload-input').value.trim();
+
+    if (!raw) {
+      toast('Please paste payload JSON', true);
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+
+    const data = parsed.data || parsed;
+
+    populateFormFields(data);
+
+    populateActivities(data);
+
+    toast('Payload loaded successfully');
+
+  } catch (err) {
+    console.error(err);
+    toast('Invalid JSON payload', true);
+  }
+}
+
+function populateFormFields(data) {
+
+  const mappings = {
+    ClaimReferenceID: 'ClaimReferenceID',
+    ClaimID: 'ClaimID',
+    ClaimDescription: 'ClaimDescription',
+    ReservationReferenceID: 'ReservationReferenceID',
+    ReservationDescription: 'ReservationDescription',
+    Program: 'Program',
+    Region: 'Region',
+    SubRegion: 'SubRegion',
+    Division: 'Division',
+    FundType: 'FundType',
+    AccountingClassification: 'AccountingClassification',
+    SupplierType: 'SupplierType',
+    PayeeID: 'PayeeID',
+    PayeeName: 'PayeeName',
+    PayeeType: 'PayeeType',
+    InvoiceDate: 'InvoiceDate',
+    InvoiceNumber: 'InvoiceNumber',
+    ResPlannedStartDate: 'ResPlannedStartDate',
+    ResPlannedEndDate: 'ResPlannedEndDate'
+  };
+
+  Object.entries(mappings).forEach(([payloadKey, fieldId]) => {
+
+    const el = document.getElementById(fieldId);
+
+    if (el && data[payloadKey] !== undefined && data[payloadKey] !== null) {
+
+      el.value = data[payloadKey];
+    }
+  });
+}
+
+function populateActivities(data) {
+
+  // Clear existing rows
+  document.getElementById('activities-list').innerHTML = '';
+  document.getElementById('no-activities').style.display = 'none';
+
+  activityIdx = 0;
+
+  const marketingActivities = data.MarketingActivities || [];
+  const claimActivities = data.ClaimActivities || [];
+
+  // Build lookup map
+  const marketingLookup = {};
+
+  marketingActivities.forEach(ma => {
+
+    marketingLookup[ma.MarketingActivityReferenceID] = ma;
+  });
+
+  claimActivities.forEach(ca => {
+
+  const linkedMA =
+    marketingLookup[ca.MarketingActivity] || {};
+
+  ensureActivityTypeExists(ca.ActivityType);
+
+  ensurePOCSourceExists(linkedMA.POCSource);
+
+  addActivity();
+
+  const row =
+    document.querySelector('#activities-list .activity-row:last-child');
+
+  const idx = row.dataset.idx;
+
+  // Populate row fields
+  row.querySelector(`[name="actType_${idx}"]`).value =
+    ca.ActivityType || '';
+
+  row.querySelector(`[name="maId_${idx}"]`).value =
+    ca.MarketingActivity || '';
+
+  row.querySelector(`[name="amount_${idx}"]`).value =
+    ca.ApprovedAmount || ca.TotalCost || 0;
+
+  row.querySelector(`[name="currency_${idx}"]`).value =
+    ca.Currency || 'US Dollar';
+
+  // Relationship mapping
+  row.querySelector(`[name="pocSource_${idx}"]`).value =
+    linkedMA.POCSource || '';
+});
+
+  if (!claimActivities.length) {
+    document.getElementById('no-activities').style.display = '';
+  }
+}
 // ── FILE → BASE64 ──────────────────────────────────────────────────────────
 function readFileAsBase64(file) {
   return new Promise((res, rej) => {
@@ -847,13 +1018,33 @@ poDz.addEventListener('drop', async e => {
 });
 
 // ── ACTIVITY BUILDER ───────────────────────────────────────────────────────
-const ACTIVITY_TYPES = [
+let ACTIVITY_TYPES = [
   'Web Banner', 'Digital Display', 'Email Campaign', 'Social Media',
   'Print Ad', 'In-Store Display', 'Event Sponsorship', 'Co-Op',
   'Rev Red after the fact', 'Online Display Campaign', 'Other'
 ];
 
-const POC_SOURCES = [
+function ensureActivityTypeExists(type) {
+
+  if (!type) return;
+
+  if (!ACTIVITY_TYPES.includes(type)) {
+
+    ACTIVITY_TYPES.push(type);
+  }
+}
+
+function ensurePOCSourceExists(source) {
+
+  if (!source) return;
+
+  if (!POC_SOURCES.includes(source)) {
+
+    POC_SOURCES.push(source);
+  }
+}
+
+let POC_SOURCES = [
   'CUSTOMER RATE CARD',
   'INVOICE',
   'PROOF OF PERFORMANCE',
@@ -991,6 +1182,8 @@ function buildPayload() {
     ActivityType:        '',
     MarketingActivity:   '',
   }));
+
+
 
   // PO
   const poOutputFiles = poFile ? [{
